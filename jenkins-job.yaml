@@ -17,7 +17,7 @@
             stages {
                 stage('Checkout') {
                     steps {
-                        git url: 'https://github.com/dtcap/jmeter-k8s-wip.git'
+                        git url: 'https://github.com/dtcap/jmeter-k8s.git'
                     }
                 }
                 stage('Run Performance Test') {

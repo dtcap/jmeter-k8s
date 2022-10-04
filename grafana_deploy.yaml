@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-grafana
+  labels:
+    app: jmeter-grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jmeter-grafana
+  template:
+    metadata:
+      labels:
+        app: jmeter-grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        env:
+        - name: GF_AUTH_BASIC_ENABLED
+          value: "true"
+        - name: GF_USERS_ALLOW_ORG_CREATE
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+          value: Admin
+        - name: GF_SERVER_ROOT_URL
+          value: /
+        volumeMounts:
+        - name: grafana-data
+          mountPath: /var/lib/grafana
+      volumes:
+        - name: grafana-data
+          persistentVolumeClaim:
+            claimName: grafana-data

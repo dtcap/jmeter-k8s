@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    jmeter_mode: slaves
+  name: jmeter-slaves
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      jmeter_mode: slaves
+  template:
+    metadata:
+      labels:
+        jmeter_mode: slaves
+    spec:
+      containers:
+        - image: jmeter-slave
+          imagePullPolicy: Never
+          name: jmeter-slave
+          ports:
+            - containerPort: 50000
+              protocol: TCP
+            - containerPort: 1099
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1500Mi
+            requests:
+              cpu: 10m
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

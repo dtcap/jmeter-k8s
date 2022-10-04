@@ -1,0 +1,37 @@
+FROM jmeter-base
+LABEL org.opencontainers.image.authors="angelika.wojciechowska@capgemini.com;dmitri.tikhanski@capgemini.com"
+
+EXPOSE 60000
+
+ENV JENKINS_HOME=/jmeter/.jenkins
+
+ENV HOME=/jmeter
+
+COPY jenkins-agent.xml /jmeter
+
+COPY jenkins-job-builder.conf /jmeter
+
+COPY jenkins-job.yaml /jmeter
+
+COPY Apache_JMeter_Dashboard.json /jmeter
+
+COPY JMeter_Test_Results_Analysis_and_Comparison.json /jmeter
+
+RUN mkdir -p /jmeter/jenkins 
+
+ENTRYPOINT curl -XPOST 'http://jmeter-influxdb.default.svc.cluster.local:8086/query' --data-urlencode 'q=CREATE DATABASE "jmeterdb"' && \
+           curl -XPOST 'http://jmeter-influxdb.default.svc.cluster.local:8086/query' --data-urlencode 'q=CREATE DATABASE "comparison"' && \
+           curl -XPOST  'http://admin:admin@jmeter-grafana.default.svc.cluster.local:3000/api/datasources' -H 'Content-Type: application/json;charset=UTF-8' \
+            --data-binary '{"name":"jmeterdb","type":"influxdb","url":"http://jmeter-influxdb.default.svc.cluster.local:8086","access":"proxy","isDefault":true,"database":"jmeterdb"}' && \
+           curl -XPOST 'http://admin:admin@jmeter-grafana.default.svc.cluster.local:3000/api/datasources' -H 'Content-Type: application/json;charset=UTF-8' \
+            --data-binary '{"name":"comparison","type":"influxdb","url":"http://jmeter-influxdb.default.svc.cluster.local:8086","access":"proxy","isDefault":true,"database":"comparison"}' && \
+           curl -XPOST 'http://admin:admin@jmeter-grafana.default.svc.cluster.local:3000/api/dashboards/db' -H 'Content-Type: application/json;charset=UTF-8' \
+           -d @Apache_JMeter_Dashboard.json && \
+           curl -XPOST 'http://admin:admin@jmeter-grafana.default.svc.cluster.local:3000/api/dashboards/db' -H 'Content-Type: application/json;charset=UTF-8' \
+           -d @JMeter_Test_Results_Analysis_and_Comparison.json && \ 
+           wget http://jenkins.default.svc.cluster.local:8080/jnlpJars/jenkins-cli.jar && \
+           cat jenkins-agent.xml | java -jar jenkins-cli.jar -s http://jenkins.default.svc.cluster.local:8080 create-node "jmeter-master" && \
+           jenkins-jobs --conf jenkins-job-builder.conf update jenkins-job.yaml && \
+           wget -q http://jenkins.default.svc.cluster.local:8080/jnlpJars/agent.jar && \ 
+           java -jar agent.jar -jnlpUrl http://jenkins.default.svc.cluster.local:8080/computer/jmeter-master/jenkins-agent.jnlp
+    

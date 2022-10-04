@@ -1,0 +1,68 @@
+FROM openjdk:11-jdk-slim
+LABEL org.opencontainers.image.authors="angelika.wojciechowska@capgemini.com;dmitri.tikhanski@capgemini.com"
+
+ARG JMETER_VERSION=5.4.3
+ARG JMETER_PLUGINS_MANAGER_VERSION=1.6
+ARG JMETER_PLUGINS_CMDRUNNER_VERSION=2.2
+ARG POSTGRESQL_JDBC_DRIVER_VERSION=42.3.1
+ARG JMETER_PLUGINS=jpgc-dummy=0.4
+
+RUN apt-get clean && \
+    apt-get update && \
+    apt-get -qy install \
+    wget \
+    telnet \
+    iputils-ping \
+    unzip \
+    sudo \
+    adduser \
+    vim \
+    procps \
+    net-tools \
+    tcpdump \
+    python3-pip \
+    git \
+	expect \
+    curl
+
+RUN pip install "influxdb==5.3.1"
+
+RUN pip install "paramiko==2.10.4"
+
+RUN pip install "jenkins-job-builder==4.1.0"
+
+RUN useradd -d /jmeter -ms /bin/bash -g root jmeter \
+    && echo "jmeter:jmeter" | chpasswd \
+    && adduser jmeter sudo \ 
+    && echo 'jmeter ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+    && cd /jmeter/ \
+    && wget -q https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz \
+    && tar -xzf apache-jmeter-${JMETER_VERSION}.tgz \
+    && rm apache-jmeter-${JMETER_VERSION}.tgz
+
+RUN wget -q https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/${JMETER_PLUGINS_MANAGER_VERSION}/jmeter-plugins-manager-${JMETER_PLUGINS_MANAGER_VERSION}.jar -P /jmeter/apache-jmeter-${JMETER_VERSION}/lib/ext
+
+RUN wget -q https://repo1.maven.org/maven2/kg/apc/cmdrunner/${JMETER_PLUGINS_CMDRUNNER_VERSION}/cmdrunner-${JMETER_PLUGINS_CMDRUNNER_VERSION}.jar -P /jmeter/apache-jmeter-${JMETER_VERSION}/lib
+
+RUN java -cp /jmeter/apache-jmeter-${JMETER_VERSION}/lib/ext/jmeter-plugins-manager-${JMETER_PLUGINS_MANAGER_VERSION}.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
+
+RUN /jmeter/apache-jmeter-${JMETER_VERSION}/bin/PluginsManagerCMD.sh install ${JMETER_PLUGINS}
+
+RUN mkdir /.java
+
+ADD copy_to_comparison_db.py /jmeter/
+
+RUN chown -R jmeter:root /jmeter && chmod -R "g+rwx,o+x" /jmeter
+
+RUN chown -R jmeter:root /.java && chmod -R "g+rwx,o+x" /.java
+
+USER jmeter
+
+WORKDIR /jmeter
+
+ENV JMETER_HOME /jmeter/apache-jmeter-$JMETER_VERSION/
+
+ENV PATH $JMETER_HOME/bin:$PATH
+
+RUN echo "log4j2.formatMsgNoLookups=true" >> /jmeter/apache-jmeter-$JMETER_VERSION/bin/system.properties
+

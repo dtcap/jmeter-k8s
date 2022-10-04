@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="users" elementType="Argument">
+            <stringProp name="Argument.name">users</stringProp>
+            <stringProp name="Argument.value">${__P(users,10)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ramp-up" elementType="Argument">
+            <stringProp name="Argument.name">ramp-up</stringProp>
+            <stringProp name="Argument.value">${__P(ramp-up,30)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="iterations" elementType="Argument">
+            <stringProp name="Argument.name">iterations</stringProp>
+            <stringProp name="Argument.value">${__P(iteratinos,-1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="duration" elementType="Argument">
+            <stringProp name="Argument.name">duration</stringProp>
+            <stringProp name="Argument.value">${__P(duration,60)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="response-time-min" elementType="Argument">
+            <stringProp name="Argument.name">response-time-min</stringProp>
+            <stringProp name="Argument.value">${__P(response-time-min,1000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="response-time-max" elementType="Argument">
+            <stringProp name="Argument.name">response-time-max</stringProp>
+            <stringProp name="Argument.value">${__P(response-time-max,2000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="scenario" elementType="Argument">
+            <stringProp name="Argument.name">scenario</stringProp>
+            <stringProp name="Argument.value">${__P(scenario,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">${iterations}</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${users}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${ramp-up}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="Request 1" enabled="true">
+          <boolProp name="WAITING">true</boolProp>
+          <boolProp name="SUCCESFULL">true</boolProp>
+          <stringProp name="RESPONSE_CODE">200</stringProp>
+          <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
+          <stringProp name="REQUEST_DATA">Dummy Sampler used to simulate requests and responses
+without actual network activity. This helps debugging tests.</stringProp>
+          <stringProp name="RESPONSE_DATA">Dummy Sampler used to simulate requests and responses
+without actual network activity. This helps debugging tests.</stringProp>
+          <stringProp name="RESPONSE_TIME">${__Random(${response-time-min},${response-time-max})}</stringProp>
+          <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
+          <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
+          <stringProp name="URL"></stringProp>
+          <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
+        </kg.apc.jmeter.samplers.DummySampler>
+        <hashTree/>
+        <kg.apc.jmeter.samplers.DummySampler guiclass="kg.apc.jmeter.samplers.DummySamplerGui" testclass="kg.apc.jmeter.samplers.DummySampler" testname="Request 2" enabled="true">
+          <boolProp name="WAITING">true</boolProp>
+          <boolProp name="SUCCESFULL">true</boolProp>
+          <stringProp name="RESPONSE_CODE">200</stringProp>
+          <stringProp name="RESPONSE_MESSAGE">OK</stringProp>
+          <stringProp name="REQUEST_DATA">Dummy Sampler used to simulate requests and responses
+without actual network activity. This helps debugging tests.</stringProp>
+          <stringProp name="RESPONSE_DATA">Dummy Sampler used to simulate requests and responses
+without actual network activity. This helps debugging tests.</stringProp>
+          <stringProp name="RESPONSE_TIME">${__Random(${response-time-min},${response-time-max})}</stringProp>
+          <stringProp name="LATENCY">${__Random(1,50)}</stringProp>
+          <stringProp name="CONNECT">${__Random(1,5)}</stringProp>
+          <stringProp name="URL"></stringProp>
+          <stringProp name="RESULT_CLASS">org.apache.jmeter.samplers.SampleResult</stringProp>
+        </kg.apc.jmeter.samplers.DummySampler>
+        <hashTree/>
+        <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener" enabled="true">
+          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="influxdbMetricsSender" elementType="Argument">
+                <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+                <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxdbUrl" elementType="Argument">
+                <stringProp name="Argument.name">influxdbUrl</stringProp>
+                <stringProp name="Argument.value">http://jmeter-influxdb.default.svc.cluster.local:8086/write?db=jmeterdb</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="application" elementType="Argument">
+                <stringProp name="Argument.name">application</stringProp>
+                <stringProp name="Argument.value">Demo</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="measurement" elementType="Argument">
+                <stringProp name="Argument.name">measurement</stringProp>
+                <stringProp name="Argument.value">jmeter</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="summaryOnly" elementType="Argument">
+                <stringProp name="Argument.name">summaryOnly</stringProp>
+                <stringProp name="Argument.value">false</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="samplersRegex" elementType="Argument">
+                <stringProp name="Argument.name">samplersRegex</stringProp>
+                <stringProp name="Argument.value">.*</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="percentiles" elementType="Argument">
+                <stringProp name="Argument.name">percentiles</stringProp>
+                <stringProp name="Argument.value">99;95;90</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="testTitle" elementType="Argument">
+                <stringProp name="Argument.name">testTitle</stringProp>
+                <stringProp name="Argument.value">Demo Test</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="eventTags" elementType="Argument">
+                <stringProp name="Argument.name">eventTags</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="TAG_scenario" elementType="Argument">
+                <stringProp name="Argument.name">TAG_scenario</stringProp>
+                <stringProp name="Argument.value">${__P(scenario,${__time(yyyy-MM-dd-HH.mm.ss,)})}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
+        </BackendListener>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  generation: 1
+  labels:
+    jmeter_mode: master
+  name: jmeter-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      jmeter_mode: master
+  template:
+    metadata:
+      labels:
+        jmeter_mode: master
+    spec:
+      containers:
+      - image: jmeter-master
+        imagePullPolicy: Never
+        name: jmeter-master
+        ports:
+        - containerPort: 60000
+          protocol: TCP
+        - containerPort: 8080
+          protocol: TCP  
+        volumeMounts:
+          - name: loadtest
+            mountPath: /jmeter/load_test
+            subPath: "load_test"
+      volumes:
+      - name: loadtest
+        configMap:
+         name: jmeter-load-test 

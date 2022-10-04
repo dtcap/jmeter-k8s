@@ -1,0 +1,73 @@
+- job:
+    name: Run JMeter Performance Tests
+    project-type: pipeline
+    dsl: |
+        pipeline {
+            parameters {
+                string(defaultValue: '10', name: 'users', description: 'Number of virtual users to kick off')
+                string(defaultValue: '30', name: 'ramp-up', description: 'Ramp-up period in seconds')
+                string(defaultValue: '-1', name: 'iterations', description: 'Number of iterations for each virtual user')
+                string(defaultValue: '60', name: 'duration', description: 'Test duration in seconds')
+                string(defaultValue: '1000', name: 'response-time-min', description: 'Minimum response time for the dummy sampler')
+                string(defaultValue: '2000', name: 'response-time-max', description: 'Maximum response time for the dummy sampler')
+                string(defaultValue: 'Build_', name: 'scenario', description: 'Custom prefix for the scenario to run')
+            }
+            agent { label 'jmeter-master' }
+
+            stages {
+                stage('Checkout') {
+                    steps {
+                        git url: 'https://github.com/dtcap/jmeter-k8s-wip.git'
+                    }
+                }
+                stage('Run Performance Test') {
+                    steps {
+                        script {
+                            command = new StringBuilder()
+                            params.entrySet().each { param ->
+                                command.append(' -G')
+                                        .append(param.key)
+                                        .append('=')
+                                        .append(param.value)
+                                if (param.key == 'scenario') {
+                                    command.append("$BUILD_NUMBER")
+                                }
+                            }
+                            command.append(' -Jscenario=' + params['scenario'] + "$BUILD_NUMBER")
+                            commandString = command.toString()
+                            testStart = System.currentTimeMillis()
+                        }
+
+                        sh "/jmeter/apache-jmeter-5.4.3/bin/jmeter -n -t test.jmx -Dserver.rmi.ssl.disable=true -R `getent ahostsv4 jmeter-slaves-svc | cut -d' ' -f1 | sort -u | awk -v ORS=, '{print \$1}' | sed 's/,\$//'` $commandString -f -l result.csv"
+                        script {
+                            testEnd = System.currentTimeMillis()
+                            CLUSTER_IP = System.getenv('CLUSTER_IP')
+                            currentBuild.description = "http://$CLUSTER_IP:3000/d/jmeter/apache-jmeter-dashboard?orgId=1&from=" + testStart + "&to=" + testEnd
+                        }
+                    }
+                }
+                stage('Publish Performance Report') {
+                    steps {
+                        perfReport filterRegex: '', showTrendGraphs: true, sourceDataFiles: '**/*.csv'
+                    }
+                    
+                }
+                stage('Generate HTML Reporting Dashboard') {
+                    steps {
+                        sh "/jmeter/apache-jmeter-5.4.3/bin/jmeter -g result.csv -f -o dashboard"
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'dashboard', reportFiles: 'index.html', reportName: 'JMeter Test Results', reportTitles: '', useWrapperFileDirectly: true])
+                    }
+                }
+                
+                stage('Post Test Actions') {
+                    steps {
+                        sh "python3 copy_to_comparison_db.py"
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'result.csv, jmeter.log'
+                }
+            }
+        }

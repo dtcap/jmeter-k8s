@@ -1,0 +1,20 @@
+FROM jenkins/jenkins:lts-jdk11
+LABEL org.opencontainers.image.authors="angelika.wojciechowska@capgemini.com;dmitri.tikhanski@capgemini.com"
+
+ARG CLUSTER_IP
+
+ENV JENKINS_USER admin
+ENV JENKINS_PASS admin
+ENV CLUSTER_IP=${CLUSTER_IP}
+
+ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false -Dhudson.model.DirectoryBrowserSupport.CSP=
+
+COPY --chown=jenkins:jenkins jenkins-plugins.txt /usr/share/jenkins/ref/plugins.txt
+
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+
+USER jenkins
+
+EXPOSE 8080
+
+EXPOSE 50000
